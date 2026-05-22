@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>区域编辑</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: rgba(0,0,0,0.7); }
+        .editor-container { width: 100%; height: 100%; position: relative; }
+        .region-box {
+            position: absolute;
+            border: 2px solid #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            cursor: move;
+            transition: border-color 0.2s;
+        }
+        .region-box:hover, .region-box.selected {
+            border-color: #ff69b4;
+            background: rgba(255, 105, 180, 0.15);
+        }
+        .resize-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #ff69b4;
+            border-radius: 50%;
+            cursor: nwse-resize;
+            right: -6px;
+            bottom: -6px;
+            box-shadow: 0 0 10px rgba(255, 105, 180, 0.8);
+        }
+        .region-label {
+            position: absolute;
+            top: -24px;
+            left: 0;
+            background: rgba(0,0,0,0.8);
+            color: #ff69b4;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+        .region-distance {
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            background: rgba(0,0,0,0.8);
+            color: #4ecca3;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+        .region-size {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(0,0,0,0.6);
+            color: #ffd700;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .toolbar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            padding: 12px 20px;
+            background: rgba(0,0,0,0.9);
+            border-radius: 10px;
+            border: 1px solid rgba(233,69,96,0.3);
+        }
+        .toolbar button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: linear-gradient(135deg, #e94560, #c73e54); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(233,69,96,0.5); }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: #ccc; border: 1px solid rgba(255,255,255,0.2); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+        .hint {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .hint small { color: #666; font-size: 12px; }
+        .mini-map {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 150px;
+            height: 100px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .mini-map canvas { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="editor-container" id="editor">
+        <div class="hint">
+            点击选中区域 → 拖拽移动 → 拖动右下角调整大小
+            <small>按 ESC 取消 | 按 Enter 确认</small>
+        </div>
+        
+        <div class="toolbar">
+            <button class="btn-secondary" onclick="clearAllRegions()">🗑️ 清除全部</button>
+            <button class="btn-secondary" onclick="resetRegions()">🔄 重置位置</button>
+            <button class="btn-primary" onclick="confirmRegions()">✅ 确认区域</button>
+        </div>
+    </div>
+
+    <script>
+        let regions = {};
+        let windowInfo = null;
+        let selectedRegion = null;
+        let isDragging = false;
+        let isResizing = false;
+        let dragStart = { x: 0, y: 0 };
+        let regionStart = { x: 0, y: 0, width: 0, height: 0 };
+
+        const editor = document.getElementById('editor');
+
+        window.electronAPI.sendRegionEditorReady();
+        window.electronAPI.receiveRegions((event, data) => {
+            regions = data.regions;
+            windowInfo = data.windowInfo;
+            renderRegions();
+        });
+        window.electronAPI.requestRegions();
+
+        function renderRegions() {
+            editor.innerHTML = `
+                <div class="hint">
+                    点击选中区域 → 拖拽移动 → 拖动右下角调整大小
+                    <small>按 ESC 取消 | 按 Enter 确认</small>
+                </div>
+                <div class="toolbar">
+                    <button class="btn-secondary" onclick="clearAllRegions()">🗑️ 清除全部</button>
+                    <button class="btn-secondary" onclick="resetRegions()">🔄 重置位置</button>
+                    <button class="btn-primary" onclick="confirmRegions()">✅ 确认区域</button>
+                </div>
+            `;
+
+            const labels = {
+                battle1: '⚔️ 战斗①',
+                battle2: '⚔️ 战斗②',
+                peace1: '🌿 非战①',
+                peace2: '🌿 非战②',
+                avatar: '🩸 血条'
+            };
+
+            const editorWidth = window.innerWidth;
+            const editorHeight = window.innerHeight;
+
+            for (const key in regions) {
+                if (regions[key]) {
+                    const r = regions[key];
+                    
+                    const windowX = windowInfo ? windowInfo.x : 0;
+                    const windowY = windowInfo ? windowInfo.y : 0;
+                    
+                    const relativeX = r.x - windowX;
+                    const relativeY = r.y - windowY;
+                    
+                    const el = document.createElement('div');
+                    el.className = 'region-box';
+                    el.dataset.key = key;
+                    el.style.left = relativeX + 'px';
+                    el.style.top = relativeY + 'px';
+                    el.style.width = r.width + 'px';
+                    el.style.height = r.height + 'px';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'region-label';
+                    label.textContent = labels[key] || key;
+                    el.appendChild(label);
+                    
+                    const distanceInfo = document.createElement('div');
+                    distanceInfo.className = 'region-distance';
+                    
+                    const rightDist = editorWidth - relativeX - r.width;
+                    const bottomDist = editorHeight - relativeY - r.height;
+                    const topDist = relativeY;
+                    const leftDist = relativeX;
+                    
+                    if (key.startsWith('battle')) {
+                        distanceInfo.textContent = `右:${rightDist}px 底:${bottomDist}px`;
+                    } else {
+                        distanceInfo.textContent = `右:${rightDist}px 上:${topDist}px`;
+                    }
+                    el.appendChild(distanceInfo);
+                    
+                    const sizeInfo = document.createElement('div');
+                    sizeInfo.className = 'region-size';
+                    sizeInfo.textContent = `${r.width}×${r.height}`;
+                    el.appendChild(sizeInfo);
+                    
+                    const handle = document.createElement('div');
+                    handle.className = 'resize-handle';
+                    el.appendChild(handle);
+                    
+                    el.addEventListener('mousedown', onRegionMouseDown);
+                    handle.addEventListener('mousedown', onResizeMouseDown);
+                    
+                    editor.appendChild(el);
+                }
+            }
+        }
+
+        function onRegionMouseDown(e) {
+            if (e.target.classList.contains('resize-handle')) return;
+            
+            e.stopPropagation();
+            selectedRegion = e.currentTarget;
+            
+            document.querySelectorAll('.region-box').forEach(r => r.classList.remove('selected'));
+            selectedRegion.classList.add('selected');
+            
+            isDragging = true;
+            dragStart = { x: e.clientX, y: e.clientY };
+            
+            const key = selectedRegion.dataset.key;
+            regionStart = {
+                x: regions[key].x,
+                y: regions[key].y,
+                width: regions[key].width,
+                height: regions[key].height
+            };
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function onResizeMouseDown(e) {
+            e.stopPropagation();
+            selectedRegion = e.currentTarget.parentElement;
+            
+            document.querySelectorAll('.region-box').forEach(r => r.classList.remove('selected'));
+            selectedRegion.classList.add('selected');
+            
+            isResizing = true;
+            dragStart = { x: e.clientX, y: e.clientY };
+            
+            const key = selectedRegion.dataset.key;
+            regionStart = {
+                x: regions[key].x,
+                y: regions[key].y,
+                width: regions[key].width,
+                height: regions[key].height
+            };
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function onMouseMove(e) {
+            if (!selectedRegion) return;
+            
+            const key = selectedRegion.dataset.key;
+            const dx = e.clientX - dragStart.x;
+            const dy = e.clientY - dragStart.y;
+            
+            const windowX = windowInfo ? windowInfo.x : 0;
+            const windowY = windowInfo ? windowInfo.y : 0;
+            
+            if (isDragging) {
+                const relativeX = Math.max(0, regionStart.x - windowX + dx);
+                const relativeY = Math.max(0, regionStart.y - windowY + dy);
+                
+                regions[key].x = windowX + relativeX;
+                regions[key].y = windowY + relativeY;
+                
+                selectedRegion.style.left = relativeX + 'px';
+                selectedRegion.style.top = relativeY + 'px';
+            } else if (isResizing) {
+                regions[key].width = Math.max(20, regionStart.width + dx);
+                regions[key].height = Math.max(20, regionStart.height + dy);
+                
+                selectedRegion.style.width = regions[key].width + 'px';
+                selectedRegion.style.height = regions[key].height + 'px';
+            }
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+            isResizing = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        function clearAllRegions() {
+            if (!confirm('确定要清除所有区域吗？')) return;
+            for (const key in regions) {
+                regions[key] = null;
+            }
+            renderRegions();
+        }
+
+        function resetRegions() {
+            window.electronAPI.resetRegions();
+        }
+
+        function confirmRegions() {
+            const regionsWithScreenCoords = {};
+            const windowX = windowInfo ? windowInfo.x : 0;
+            const windowY = windowInfo ? windowInfo.y : 0;
+            
+            for (const key in regions) {
+                if (regions[key]) {
+                    const r = regions[key];
+                    
+                    const relativeX = r.x - windowX;
+                    const relativeY = r.y - windowY;
+                    
+                    regionsWithScreenCoords[key] = {
+                        x: relativeX,
+                        y: relativeY,
+                        width: r.width,
+                        height: r.height,
+                        screenX: r.x,
+                        screenY: r.y
+                    };
+                }
+            }
+            window.electronAPI.confirmRegions(regionsWithScreenCoords);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.electronAPI.cancelRegions();
+            } else if (e.key === 'Enter') {
+                confirmRegions();
+            }
+        });
+
+        editor.addEventListener('click', (e) => {
+            if (e.target === editor) {
+                document.querySelectorAll('.region-box').forEach(r => r.classList.remove('selected'));
+                selectedRegion = null;
+            }
+        });
+    </script>
+</body>
+</html>

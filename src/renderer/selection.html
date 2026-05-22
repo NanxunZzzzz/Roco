@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>区域选择</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent;
+        }
+        
+        .selection-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            cursor: crosshair;
+            user-select: none;
+        }
+        
+        .selection-box {
+            position: absolute;
+            border: 3px solid #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            pointer-events: none;
+            display: none;
+        }
+        
+        .selection-info {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Microsoft YaHei', sans-serif;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        
+        .hint {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="selection-overlay" id="overlay">
+        <div class="hint" id="hint">
+            按住鼠标左键拖动框选区域
+            <small>按 ESC 取消</small>
+        </div>
+        <div class="selection-box" id="selectionBox"></div>
+        <div class="selection-info" id="selectionInfo"></div>
+    </div>
+
+    <script>
+        let isSelecting = false;
+        let selectionStart = { x: 0, y: 0 };
+        
+        const overlay = document.getElementById('overlay');
+        const box = document.getElementById('selectionBox');
+        const info = document.getElementById('selectionInfo');
+        const hint = document.getElementById('hint');
+        
+        overlay.onmousedown = function(e) {
+            isSelecting = true;
+            selectionStart = { x: e.clientX, y: e.clientY };
+            
+            hint.style.display = 'none';
+            box.style.left = e.clientX + 'px';
+            box.style.top = e.clientY + 'px';
+            box.style.width = '0px';
+            box.style.height = '0px';
+            box.style.display = 'block';
+            
+            info.style.display = 'none';
+        };
+        
+        overlay.onmousemove = function(e) {
+            if (!isSelecting) return;
+            
+            const x = Math.min(selectionStart.x, e.clientX);
+            const y = Math.min(selectionStart.y, e.clientY);
+            const width = Math.abs(e.clientX - selectionStart.x);
+            const height = Math.abs(e.clientY - selectionStart.y);
+            
+            box.style.left = x + 'px';
+            box.style.top = y + 'px';
+            box.style.width = width + 'px';
+            box.style.height = height + 'px';
+            
+            info.style.left = (x + width + 10) + 'px';
+            info.style.top = y + 'px';
+            info.textContent = `${width} x ${height}`;
+            info.style.display = 'block';
+        };
+        
+        overlay.onmouseup = function(e) {
+            if (!isSelecting) return;
+            isSelecting = false;
+            
+            const x = Math.min(selectionStart.x, e.clientX);
+            const y = Math.min(selectionStart.y, e.clientY);
+            const width = Math.abs(e.clientX - selectionStart.x);
+            const height = Math.abs(e.clientY - selectionStart.y);
+            
+            if (width > 10 && height > 10) {
+                const region = { x, y, width, height };
+                console.log('选择区域:', region);
+                window.electronAPI.sendSelectionComplete(region);
+            } else {
+                window.electronAPI.sendSelectionCancelled();
+            }
+        };
+        
+        document.onkeydown = function(e) {
+            if (e.key === 'Escape') {
+                console.log('取消选择');
+                window.electronAPI.sendSelectionCancelled();
+            }
+        };
+        
+        console.log('选择窗口已启动');
+    </script>
+</body>
+</html>

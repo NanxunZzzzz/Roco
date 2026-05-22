@@ -1,0 +1,47 @@
+appId: com.yuguxiaojiu.roco-pity-tracker
+productName: YUGUXIAOJIU-ROCO
+copyright: Copyright © 2024 YUGUXIAOJIU
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - src/**/*
+  - demo-images/**/*
+  - build/icon.ico
+
+extraResources:
+  - from: demo-images/
+    to: templates/
+    filter:
+      - "**/*.png"
+      - "**/*.jpg"
+      - "**/*.jpeg"
+      - "**/*.bmp"
+  - from: src/main/get-windows.ps1
+    to: ./
+    filter:
+      - "*.ps1"
+  - from: build/icon.ico
+    to: ./
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: ${productName}-${version}-Setup.${ext}
+  signAndEditExecutable: false
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: 异色保底计数
+  deleteAppDataOnUninstall: true
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico

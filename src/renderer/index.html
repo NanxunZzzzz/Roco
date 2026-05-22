@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YUGUXIAOJIU - 异色保底计数</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #0f0f1e;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-size: 14px;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #e94560;
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            border-color: rgba(233, 69, 96, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 13px;
+            color: #e94560;
+            margin-bottom: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .top-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .sprite-search-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .sprite-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            border-radius: 8px;
+            background: rgba(233, 69, 96, 0.08);
+            color: #ff69b4;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .sprite-input:focus {
+            outline: none;
+            border-color: #e94560;
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.15);
+        }
+
+        .sprite-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 300px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #2a2a4e, #1a1a2e);
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            border-radius: 8px;
+            margin-top: 4px;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .sprite-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-family {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .dropdown-family-title {
+            font-size: 11px;
+            color: #888;
+            font-weight: 600;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #e0e0e0;
+            border-radius: 4px;
+            transition: all 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(233, 69, 96, 0.15);
+            color: #ff69b4;
+        }
+
+        .dropdown-item.selected {
+            background: rgba(233, 69, 96, 0.25);
+            color: #ff69b4;
+            font-weight: 600;
+        }
+
+        .dropdown-item-name {
+            flex: 1;
+        }
+
+        .dropdown-item-attr {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #aaa;
+            margin-left: 8px;
+        }
+
+        .dropdown-item-stage {
+            font-size: 10px;
+            color: #666;
+            margin-left: 8px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .counter-card {
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.12), rgba(78, 204, 163, 0.08));
+            border: 1px solid rgba(233, 69, 96, 0.25);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .counter-card:hover {
+            border-color: rgba(233, 69, 96, 0.4);
+        }
+
+        .count-number {
+            font-size: 64px;
+            font-weight: 800;
+            color: #ff69b4;
+            text-shadow: 0 0 30px rgba(255, 105, 180, 0.6);
+            line-height: 1;
+        }
+
+        .count-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 6px;
+        }
+
+        .pity-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            margin-top: 14px;
+            overflow: hidden;
+        }
+
+        .pity-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+            background: linear-gradient(90deg, #4ecca3, #e94560);
+        }
+
+        .pity-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #666;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #e94560, #c73e54);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(233, 69, 96, 0.5);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4ecca3, #3db892);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 204, 163, 0.5);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e94560, #c73e54);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f0a500, #d49200);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #4dabf7, #339af0);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ccc;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .btn-lg {
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .region-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .region-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.25s;
+        }
+
+        .region-item:hover {
+            background: rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .region-item button {
+            width: 100%;
+            font-size: 12px;
+            padding: 9px 12px;
+        }
+
+        .region-status {
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+            font-family: monospace;
+            padding: 4px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .region-status.active {
+            color: #4ecca3;
+            background: rgba(78, 204, 163, 0.1);
+            font-weight: bold;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .status-label {
+            color: #888;
+        }
+
+        .status-value {
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .val-green {
+            color: #4ecca3;
+        }
+
+        .val-pink {
+            color: #ff69b4;
+        }
+
+        .val-yellow {
+            color: #f0a500;
+        }
+
+        .val-red {
+            color: #e94560;
+        }
+
+        .val-gray {
+            color: #555;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .log-panel {
+            max-height: 120px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 11px;
+            margin-top: 10px;
+            line-height: 1.7;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .log-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .log-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .log-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+
+        .history-list {
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 11px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            transition: background 0.2s;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .history-item:nth-child(even) {
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .history-num {
+            color: #ff69b4;
+            font-weight: 700;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: linear-gradient(135deg, #2a2a4e, #1a1a2e);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            max-width: 420px;
+            border: 2px solid #e94560;
+            box-shadow: 0 0 60px rgba(233, 69, 96, 0.4);
+        }
+
+        .modal-title {
+            font-size: 22px;
+            color: #ff69b4;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .modal-msg {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 24px;
+            line-height: 1.7;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+        }
+
+        .modal-buttons button {
+            padding: 14px 28px;
+            font-size: 15px;
+            border-radius: 10px;
+        }
+
+        select {
+            padding: 9px 12px;
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            border-radius: 8px;
+            background: linear-gradient(135deg, #2a2a4e, #1a1a2e);
+            color: #ff69b4;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #e94560;
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.15);
+        }
+
+        select option {
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>✦ YUGUXIAOJIU - 异色保底计数 ✦</h1>
+
+        <!-- 顶部精灵名输入 -->
+        <div class="top-bar">
+            <label style="color:#888;font-size:13px;font-weight:600;">当前精灵</label>
+            <div class="sprite-search-container" id="spriteSearchContainer">
+                <input type="text" id="spriteName" class="sprite-input" value="空空颅" placeholder="输入或选择精灵名称..."
+                    autocomplete="off">
+                <div class="sprite-dropdown" id="spriteDropdown"></div>
+            </div>
+        </div>
+
+        <!-- 第一行：计数器 + 操作按钮 -->
+        <div class="main-grid">
+            <div class="card counter-card">
+                <div class="count-number" id="pollutedCount">0</div>
+                <div class="count-label">污染精灵计数 / 80只保底异色</div>
+                <div class="pity-bar">
+                    <div class="pity-fill" id="pityFill" style="width:0%"></div>
+                </div>
+                <div class="pity-text">
+                    <span id="pityProgress">0/80</span>
+                    <span id="pityRate">保底概率: 0%</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">⚡ 操作面板</div>
+                <div class="action-grid">
+                    <button class="btn-danger btn-lg btn-full" id="confirmBtn" onclick="confirmPollution()"
+                        style="grid-column: 1 / -1;">确认污染 (+1)</button>
+                    <label class="checkbox-label" style="grid-column: 1 / -1;display:flex;align-items:center;gap:8px;padding:8px;">
+                        <input type="checkbox" id="autoCountToggle" onchange="toggleAutoCount()" />
+                        <span>🔄 自动计数（污染后退出战斗自动+1）</span>
+                    </label>
+                    <button class="btn-secondary btn-full" onclick="undoLast()">↩ 撤销</button>
+                    <button class="btn-secondary btn-full" onclick="resetCount()">🔄 重置</button>
+                </div>
+
+                <div class="card-title" style="margin-top:16px;">📜 历史记录</div>
+                <div class="history-list" id="historyList">
+                    <div style="color:#555;text-align:center;padding:20px;font-size:12px;">暂无记录</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 区域设置卡片 -->
+        <div class="card">
+            <div class="card-title">🎯 区域设置</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center;">
+                <select id="windowSelect" style="min-width:150px;flex:1;min-width:150px;max-width:250px;">
+                    <option value="">-- 选择游戏窗口 --</option>
+                </select>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <button class="btn-secondary" style="white-space:nowrap;" onclick="refreshWindowList()">🔄 刷新</button>
+                    <button class="btn-success" style="white-space:nowrap;" onclick="autoSetPeaceRegions()">🌿 非战</button>
+                    <button class="btn-danger" style="white-space:nowrap;" onclick="autoSetBattleRegions()">⚔️ 战斗</button>
+                    <button class="btn-primary" style="white-space:nowrap;" onclick="editRegions()">✏️ 编辑</button>
+                    <button class="btn-warning" style="white-space:nowrap;" onclick="openTemplateDir()">📁 目录</button>
+                    <button class="btn-info" style="white-space:nowrap;" onclick="exportRegionData()">📊 输出</button>
+                </div>
+            </div>
+
+            <div
+                style="font-size:11px;color:#666;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">
+                ⚔️ 战斗检测区域</div>
+            <div class="region-grid">
+                <div class="region-item">
+                    <button class="btn-primary" onclick="selectRegion('battle1')">战斗按钮 ①</button>
+                    <div class="region-status" id="battle1Info">未选择</div>
+                </div>
+                <div class="region-item">
+                    <button class="btn-primary" onclick="selectRegion('battle2')">战斗按钮 ②</button>
+                    <div class="region-status" id="battle2Info">未选择</div>
+                </div>
+            </div>
+
+            <div
+                style="font-size:11px;color:#666;font-weight:600;margin-top:14px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">
+                🌿 非战检测区域</div>
+            <div class="region-grid">
+                <div class="region-item">
+                    <button class="btn-success" onclick="selectRegion('peace1')">非战区域 ①</button>
+                    <div class="region-status" id="peace1Info">未选择</div>
+                </div>
+                <div class="region-item">
+                    <button class="btn-success" onclick="selectRegion('peace2')">非战区域 ②</button>
+                    <div class="region-status" id="peace2Info">未选择</div>
+                </div>
+            </div>
+
+            <div
+                style="font-size:11px;color:#666;font-weight:600;margin-top:14px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">
+                🩸 血条识别区域</div>
+            <div class="region-grid">
+                <div class="region-item" style="grid-column: 1 / -1;">
+                    <button class="btn-warning" onclick="selectRegion('avatar')">🩸 血条区域 (污染/正常检测)</button>
+                    <div class="region-status" id="avatarInfo">未选择</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 状态 & 控制卡片 -->
+        <div class="card">
+            <div class="card-title">📊 实时状态 & 控制</div>
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="status-label">战斗状态</span>
+                    <span class="status-value val-gray" id="val_battle">未检测</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">精灵类型</span>
+                    <span class="status-value val-gray" id="val_type">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">颜色(RGB)</span>
+                    <span class="status-value val-gray" id="val_color">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">粉紫比</span>
+                    <span class="status-value val-gray" id="val_pink">-</span>
+                </div>
+            </div>
+
+            <div class="control-row">
+                <button class="btn-success" id="startBtn" onclick="toggleDetection()">▶ 开始监控</button>
+                <button class="btn-secondary" onclick="detectOnce()">🔍 单次检测</button>
+                <select id="intervalSelect" style="width:90px;">
+                    <option value="1000" selected>1s</option>
+                    <option value="1500">1.5s</option>
+                    <option value="2000">2s</option>
+                    <option value="3000">3s</option>
+                    <option value="5000">5s</option>
+                </select>
+            </div>
+
+            <div class="log-panel" id="logPanel"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="exitModal">
+        <div class="modal-box">
+            <div class="modal-title" id="modalTitle">⚠️ 提示</div>
+            <div class="modal-msg" id="exitModalMsg"></div>
+            <div class="modal-buttons">
+                <button class="btn-danger btn-lg" id="modalYes">是，计数 (+1)</button>
+                <button class="btn-secondary btn-lg" id="modalNo">否，跳过</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedWindow = null;
+        let regions = { battle1: null, battle2: null, peace1: null, peace2: null, avatar: null };
+        let regionTemplates = { battle1: null, battle2: null, peace1: null, peace2: null };
+        let isDetecting = false;
+        let detectionInterval = null;
+        let templates = [];
+        let recognizerWorker = null;
+        let isWorkerReady = false;
+
+        let pollutedCount = 0;
+        let history = [];
+        let currentInBattle = false;
+        let currentIsPolluted = false;
+        let pendingPollution = false;
+        let lastBattleState = null;
+        let cooldownActive = false;
+        let modalShowing = false;
+        let battleResultReceived = false;
+        let cooldownUntil = 0;
+        let autoCountEnabled = false;
+        let detectedPollutedInBattle = false;
+        let regionStatusInterval = null;
+        let lastRegionUpdateTime = 0;
+
+        const PITY_MAX = 80;
+        const BASE_RATE = 0.018;
+        const COMPENSATED_RATE = 0.02;
+
+        let logBuffer = [];
+        let logFlushTimer = null;
+        let lastLogMsg = '';
+        let lastLogCount = 0;
+
+        function addLog(msg) {
+            if (msg === lastLogMsg) {
+                lastLogCount++;
+                if (lastLogCount > 1) {
+                    return;
+                }
+            } else {
+                if (lastLogCount > 1) {
+                    const t = new Date().toLocaleTimeString();
+                    logBuffer.push('[' + t + '] ... (重复 ' + lastLogCount + ' 次)');
+                }
+                lastLogMsg = msg;
+                lastLogCount = 1;
+            }
+            
+            const t = new Date().toLocaleTimeString();
+            logBuffer.push('[' + t + '] ' + msg);
+
+            if (!logFlushTimer) {
+                logFlushTimer = requestAnimationFrame(() => {
+                    const panel = document.getElementById('logPanel');
+                    if (!panel) return;
+
+                    const fragment = document.createDocumentFragment();
+                    logBuffer.forEach(m => {
+                        const div = document.createElement('div');
+                        div.textContent = m;
+                        fragment.appendChild(div);
+                    });
+                    panel.appendChild(fragment);
+
+                    while (panel.children.length > 40) panel.removeChild(panel.firstChild);
+                    panel.scrollTop = panel.scrollHeight;
+
+                    logBuffer = [];
+                    logFlushTimer = null;
+                });
+            }
+        }
+
+        function setVal(id, val, cls) {
+            const el = document.getElementById('val_' + id);
+            if (!el) return;
+            el.textContent = String(val);
+            el.className = 'status-value ' + (cls || 'gray');
+        }
+
+        function updateCounter() {
+            document.getElementById('pollutedCount').textContent = pollutedCount;
+            document.getElementById('pityProgress').textContent = pollutedCount + '/' + PITY_MAX;
+            const pct = Math.min(100, (pollutedCount / PITY_MAX) * 100);
+            document.getElementById('pityFill').style.width = pct + '%';
+
+            let rate = 0;
+            if (pollutedCount > 0) {
+                const pityIncrease = Math.min(0.98, pollutedCount / PITY_MAX * 0.97);
+                rate = BASE_RATE + (COMPENSATED_RATE - BASE_RATE) * pityIncrease + (1 - COMPENSATED_RATE) * Math.pow(pollutedCount / PITY_MAX, 2);
+                rate = Math.min(rate, 0.995);
+            }
+            if (pollutedCount >= PITY_MAX) rate = 1;
+            document.getElementById('pityRate').textContent = '保底概率: ' + (rate * 100).toFixed(2) + '%';
+
+            saveData();
+        }
+
+        function confirmPollution() {
+            const name = document.getElementById('spriteName').value.trim() || '未知';
+            pollutedCount++;
+            pendingPollution = false;
+            const entry = { num: pollutedCount, time: new Date().toLocaleString(), type: 'confirmed', name: name };
+            history.unshift(entry);
+            if (history.length > 50) history.pop();
+            updateCounter();
+            renderHistory();
+            addLog('✅ 确认污染 #' + pollutedCount + ' [' + name + '] (累计' + pollutedCount + '/' + PITY_MAX + ')');
+
+            if (pollutedCount >= PITY_MAX) {
+                addLog('🎉 已达到保底线！第' + pollutedCount + '只必定异色！');
+                alert('恭喜！已达 ' + PITY_MAX + ' 只保底！\n下一只必定是异色精灵！');
+            }
+        }
+
+        function undoLast() {
+            if (history.length === 0) return;
+            const last = history.shift();
+            if (last.type === 'confirmed') pollutedCount--;
+            pendingPollution = false;
+            updateCounter();
+            renderHistory();
+            addLog('↩️ 撤销了 #' + (last.num || '?'));
+        }
+
+        function resetCount() {
+            if (!confirm('确定要重置所有计数吗？')) return;
+            pollutedCount = 0;
+            history = [];
+            pendingPollution = false;
+            cooldownActive = false;
+            modalShowing = false;
+            battleResultReceived = false;
+            updateCounter();
+            renderHistory();
+            addLog('🔄 计数已重置');
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            if (history.length === 0) {
+                list.innerHTML = '<div style="color:#666;text-align:center;padding:20px;">暂无记录</div>';
+                return;
+            }
+            list.innerHTML = history.map(function (h) {
+                return '<div class="history-item">' +
+                    '<span class="history-num">#' + h.num + ' ' + (h.name || '') + ' ' + (h.type === 'auto' ? '[自动]' : '[手动]') + '</span>' +
+                    '<span class="history-time">' + h.time + '</span>' +
+                    '</div>';
+            }).join('');
+        }
+
+        function initWorker() {
+            try {
+                recognizerWorker = new Worker('recognizer.worker.js');
+                recognizerWorker.onmessage = function (e) {
+                    const { type, result, error } = e.data;
+                    if (type === 'ready') {
+                        isWorkerReady = true;
+                        addLog('识别器就绪');
+                    } else if (type === 'result') {
+                        handleResult(result);
+                    } else if (type === 'error') {
+                        addLog('错误: ' + error);
+                    } else if (type === 'matchResult') {
+                    }
+                };
+            } catch (e) {
+                addLog('Worker创建失败: ' + e.message);
+            }
+        }
+
+        function formatRegionInfo(key, r) {
+            let info = r.width + '×' + r.height;
+            
+            if (key.startsWith('battle')) {
+                const right = Math.round(selectedWindow ? selectedWindow.width - r.x - r.width : window.screen.width - r.x - r.width);
+                const bottom = Math.round(selectedWindow ? selectedWindow.height - r.y - r.height : window.screen.height - r.y - r.height);
+                info += ` (右:${right} 底:${bottom})`;
+            } else {
+                const right = Math.round(selectedWindow ? selectedWindow.width - r.x - r.width : window.screen.width - r.x - r.width);
+                info += ` (右:${right} 上:${r.y})`;
+            }
+            
+            return info;
+        }
+
+        async function selectRegion(regionKey) {
+            try {
+                const r = await window.electronAPI.startRegionSelection(selectedWindow);
+                if (r) {
+                    const regionData = {
+                        x: r.x,
+                        y: r.y,
+                        width: r.width,
+                        height: r.height,
+                        screenX: r.x,
+                        screenY: r.y
+                    };
+                    
+                    if (selectedWindow) {
+                        regionData.x = r.x - selectedWindow.x;
+                        regionData.y = r.y - selectedWindow.y;
+                    }
+                    
+                    regions[regionKey] = regionData;
+                    const infoEl = document.getElementById(regionKey + 'Info');
+                    infoEl.textContent = formatRegionInfo(regionKey, regionData);
+                    infoEl.classList.remove('active');
+                    addLog('已框选 ' + regionKey + ': ' + r.width + 'x' + r.height + '，正在截图保存模板...');
+
+                    try {
+                        const cap = await window.electronAPI.captureRegion(r);
+                        if (cap && cap.image) {
+                            regionTemplates[regionKey] = cap.image;
+                            infoEl.textContent = formatRegionInfo(regionKey, regionData) + ' ✓';
+                            infoEl.classList.add('active');
+                            addLog('✓ ' + regionKey + ' 模板已保存');
+                        } else {
+                            infoEl.textContent = formatRegionInfo(regionKey, regionData) + ' ⚠';
+                            addLog('⚠ ' + regionKey + ' 框选成功但截图失败');
+                        }
+                    } catch (capErr) {
+                        addLog('⚠ ' + regionKey + ' 截图失败: ' + capErr.message);
+                    }
+
+                    saveData();
+                    startRegionStatusUpdater();
+                }
+            } catch (e) {
+                addLog('框选失败: ' + e.message);
+            }
+        }
+
+        function startRegionStatusUpdater() {
+            if (regionStatusInterval) return;
+            
+            regionStatusInterval = setInterval(async () => {
+                if (!selectedWindow || isDetecting) return;
+                
+                await updateAllRegionStatus();
+            }, 5000);
+        }
+
+        function stopRegionStatusUpdater() {
+            if (regionStatusInterval) {
+                clearInterval(regionStatusInterval);
+                regionStatusInterval = null;
+            }
+        }
+
+        async function updateAllRegionStatus() {
+            if (!selectedWindow) return;
+            
+            const regionKeys = ['battle1', 'battle2', 'peace1', 'peace2'];
+            
+            for (const key of regionKeys) {
+                if (!regions[key] || !regionTemplates[key]) continue;
+                
+                try {
+                    const regionToCapture = {
+                        x: regions[key].screenX !== undefined ? regions[key].screenX : 
+                           (selectedWindow ? selectedWindow.x + regions[key].x : regions[key].x),
+                        y: regions[key].screenY !== undefined ? regions[key].screenY : 
+                           (selectedWindow ? selectedWindow.y + regions[key].y : regions[key].y),
+                        width: regions[key].width,
+                        height: regions[key].height
+                    };
+                    
+                    const cap = await window.electronAPI.captureRegion(regionToCapture);
+                    if (cap && cap.image) {
+                        if (recognizerWorker && isWorkerReady) {
+                            const matchResult = await matchSingleRegion(cap.image, regionTemplates[key], key);
+                            updateRegionStatus(key, matchResult);
+                        } else {
+                            const contentResult = await hasContent(cap.image);
+                            updateRegionStatus(key, { matched: contentResult, similarity: contentResult ? 0.7 : 0.1 });
+                        }
+                    }
+                } catch (e) {
+                    console.error('更新区域状态失败:', key, e.message);
+                }
+            }
+        }
+
+        async function autoSetPeaceRegions() {
+            if (!selectedWindow) {
+                alert('请先选择游戏窗口');
+                return;
+            }
+
+            addLog('🌿 正在设置非战区域...');
+            addLog('窗口信息: ' + JSON.stringify(selectedWindow));
+
+            try {
+                const result = await window.electronAPI.autoCalculateRegions(selectedWindow);
+                
+                if (!result.success) {
+                    addLog('❌ 设置失败: ' + result.error);
+                    return;
+                }
+
+                const autoRegions = result.regions;
+                let successCount = 0;
+
+                for (const key of ['peace1', 'peace2']) {
+                    if (autoRegions[key]) {
+                        regions[key] = autoRegions[key];
+                        
+                        try {
+                            const regionToCapture = {
+                                x: autoRegions[key].screenX !== undefined ? autoRegions[key].screenX : autoRegions[key].x,
+                                y: autoRegions[key].screenY !== undefined ? autoRegions[key].screenY : autoRegions[key].y,
+                                width: autoRegions[key].width,
+                                height: autoRegions[key].height
+                            };
+                            const cap = await window.electronAPI.captureRegion(regionToCapture);
+                            if (cap && cap.image) {
+                                regionTemplates[key] = cap.image;
+                                const infoEl = document.getElementById(key + 'Info');
+                                infoEl.textContent = formatRegionInfo(key, autoRegions[key]) + ' ✓';
+                                infoEl.classList.add('active');
+                                successCount++;
+                                addLog('✓ ' + key + ' 非战区域设置成功');
+                            }
+                        } catch (e) {
+                            addLog('⚠ ' + key + ' 截图失败: ' + e.message);
+                        }
+                    }
+                }
+
+                saveData();
+                addLog(`🎉 非战区域设置完成！成功 ${successCount}/2 个区域`);
+                addLog('💡 提示：请进入战斗界面后，点击"⚔️ 设置战斗区域"按钮');
+            } catch (e) {
+                addLog('❌ 设置异常: ' + e.message);
+            }
+        }
+
+        async function autoSetBattleRegions() {
+            if (!selectedWindow) {
+                alert('请先选择游戏窗口');
+                return;
+            }
+
+            addLog('⚔️ 正在设置战斗区域...');
+            addLog('窗口信息: ' + JSON.stringify(selectedWindow));
+
+            try {
+                const result = await window.electronAPI.autoCalculateRegions(selectedWindow);
+                
+                if (!result.success) {
+                    addLog('❌ 设置失败: ' + result.error);
+                    return;
+                }
+
+                const autoRegions = result.regions;
+                let successCount = 0;
+
+                for (const key of ['battle1', 'battle2', 'avatar']) {
+                    if (autoRegions[key]) {
+                        regions[key] = autoRegions[key];
+                        
+                        try {
+                            const regionToCapture = {
+                                x: autoRegions[key].screenX !== undefined ? autoRegions[key].screenX : autoRegions[key].x,
+                                y: autoRegions[key].screenY !== undefined ? autoRegions[key].screenY : autoRegions[key].y,
+                                width: autoRegions[key].width,
+                                height: autoRegions[key].height
+                            };
+                            const cap = await window.electronAPI.captureRegion(regionToCapture);
+                            if (cap && cap.image) {
+                                regionTemplates[key] = cap.image;
+                                const infoEl = document.getElementById(key + 'Info');
+                                infoEl.textContent = formatRegionInfo(key, autoRegions[key]) + ' ✓';
+                                infoEl.classList.add('active');
+                                successCount++;
+                                addLog('✓ ' + key + ' 战斗区域设置成功');
+                            }
+                        } catch (e) {
+                            addLog('⚠ ' + key + ' 截图失败: ' + e.message);
+                        }
+                    }
+                }
+
+                saveData();
+                addLog(`🎉 战斗区域设置完成！成功 ${successCount}/3 个区域`);
+                
+                if (checkRegionsReady()) {
+                    addLog('✅ 所有区域已设置完成，可以开始监控！');
+                }
+            } catch (e) {
+                addLog('❌ 设置异常: ' + e.message);
+            }
+        }
+
+        function exportRegionData() {
+            const regionKeys = ['battle1', 'battle2', 'peace1', 'peace2', 'avatar'];
+            
+            const exportData = {
+                windowInfo: selectedWindow ? {
+                    title: selectedWindow.title,
+                    x: selectedWindow.x,
+                    y: selectedWindow.y,
+                    width: selectedWindow.width,
+                    height: selectedWindow.height
+                } : null,
+                regions: {}
+            };
+            
+            for (const key of regionKeys) {
+                if (regions[key]) {
+                    exportData.regions[key] = {
+                        x: regions[key].x,
+                        y: regions[key].y,
+                        width: regions[key].width,
+                        height: regions[key].height,
+                        screenX: regions[key].screenX,
+                        screenY: regions[key].screenY
+                    };
+                }
+            }
+            
+            const jsonStr = JSON.stringify(exportData, null, 2);
+            addLog('📊 === 区域数据输出 ===');
+            addLog(jsonStr);
+            addLog('========================');
+        }
+
+        async function editRegions() {
+            if (!selectedWindow) {
+                alert('请先选择游戏窗口');
+                return;
+            }
+
+            addLog('✏️ 打开区域编辑器...');
+            addLog('当前区域数据: ' + JSON.stringify(regions));
+            addLog('当前窗口信息: ' + JSON.stringify(selectedWindow));
+
+            try {
+                const result = await window.electronAPI.openRegionEditor(regions, selectedWindow);
+                
+                if (result.success && result.regions) {
+                    const editedRegions = result.regions;
+                    let successCount = 0;
+
+                    for (const key of ['battle1', 'battle2', 'peace1', 'peace2', 'avatar']) {
+                        if (editedRegions[key]) {
+                            regions[key] = editedRegions[key];
+                            
+                            try {
+                                const regionToCapture = {
+                                    x: editedRegions[key].screenX !== undefined ? editedRegions[key].screenX : 
+                                       (selectedWindow ? selectedWindow.x + editedRegions[key].x : editedRegions[key].x),
+                                    y: editedRegions[key].screenY !== undefined ? editedRegions[key].screenY : 
+                                       (selectedWindow ? selectedWindow.y + editedRegions[key].y : editedRegions[key].y),
+                                    width: editedRegions[key].width,
+                                    height: editedRegions[key].height
+                                };
+                                const cap = await window.electronAPI.captureRegion(regionToCapture);
+                                if (cap && cap.image) {
+                                    regionTemplates[key] = cap.image;
+                                    const infoEl = document.getElementById(key + 'Info');
+                                    infoEl.textContent = formatRegionInfo(key, editedRegions[key]) + ' ✓';
+                                    infoEl.classList.add('active');
+                                    successCount++;
+                                    addLog('✓ ' + key + ' 区域已更新');
+                                }
+                            } catch (e) {
+                                addLog('⚠ ' + key + ' 截图失败: ' + e.message);
+                            }
+                        }
+                    }
+
+                    saveData();
+                    addLog(`🎉 区域编辑完成！成功 ${successCount}/5 个区域`);
+                } else {
+                    addLog('区域编辑已取消');
+                }
+            } catch (e) {
+                addLog('❌ 区域编辑异常: ' + e.message);
+            }
+        }
+
+        function clearRegion(key) {
+            regions[key] = null;
+            regionTemplates[key] = null;
+            const el = document.getElementById(key + 'Info');
+            el.textContent = '未选择';
+            el.classList.remove('active');
+            saveData();
+        }
+
+        async function refreshWindowList() {
+            addLog('刷新窗口列表...');
+            try {
+                const list = await window.electronAPI.getWindowList();
+                const sel = document.getElementById('windowSelect');
+                sel.innerHTML = '<option value="">-- 选择 --</option>';
+
+                let autoSelectIndex = -1;
+
+                list.forEach((w, i) => {
+                    const o = document.createElement('option');
+                    o.value = JSON.stringify(w);
+                    o.textContent = w.title.substring(0, 25);
+                    sel.appendChild(o);
+
+                    if (w.title.includes('洛克王国') || w.title.includes('NRC')) {
+                        autoSelectIndex = i + 1;
+                    }
+                });
+
+                if (autoSelectIndex > 0) {
+                    sel.selectedIndex = autoSelectIndex;
+                    sel.dispatchEvent(new Event('change'));
+                    addLog('✅ 自动选择: ' + list[autoSelectIndex - 1].title);
+                }
+
+                addLog('找到 ' + list.length + ' 个窗口');
+            } catch (e) { addLog('刷新失败: ' + e.message); }
+        }
+
+        async function openTemplateDir() {
+            try {
+                const result = await window.electronAPI.openTemplateDir();
+                if (result.success) {
+                    addLog('已打开模板目录: ' + result.path);
+                } else {
+                    addLog('打开模板目录失败: ' + (result.error || '未知错误'));
+                }
+            } catch (e) { addLog('打开目录出错: ' + e.message); }
+        }
+
+        document.getElementById('windowSelect').addEventListener('change', function () {
+            if (this.value) {
+                selectedWindow = JSON.parse(this.value);
+                addLog('窗口: ' + selectedWindow.title);
+                saveData();
+                startRegionStatusUpdater();
+            }
+        });
+
+        function checkRegionsReady() {
+            const hasBattle = regions.battle1 || regions.battle2;
+            const hasPeace = regions.peace1 || regions.peace2;
+            const hasAvatar = !!regions.avatar;
+            return hasBattle && hasPeace && hasAvatar;
+        }
+
+        async function updateWindowPosition() {
+            if (!selectedWindow) return;
+            
+            try {
+                const result = await window.electronAPI.getWindowInfo(selectedWindow.hwnd);
+                if (result.success && result.window) {
+                    const newWindow = result.window;
+                    const dx = newWindow.x - selectedWindow.x;
+                    const dy = newWindow.y - selectedWindow.y;
+                    
+                    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                        addLog(`📡 窗口位置变化: (${selectedWindow.x},${selectedWindow.y}) → (${newWindow.x},${newWindow.y})`);
+                        
+                        for (const key of ['battle1', 'battle2', 'peace1', 'peace2', 'avatar']) {
+                            if (regions[key]) {
+                                if (regions[key].screenX !== undefined) {
+                                    regions[key].screenX += dx;
+                                }
+                                if (regions[key].screenY !== undefined) {
+                                    regions[key].screenY += dy;
+                                }
+                            }
+                        }
+                        
+                        selectedWindow = newWindow;
+                    }
+                }
+            } catch (e) {
+                addLog('⚠ 更新窗口位置失败: ' + e.message);
+            }
+        }
+
+        async function detectOnce() {
+            if (!selectedWindow) { alert('请先选择游戏窗口'); return; }
+            if (!checkRegionsReady()) { alert('请先完成所有区域框选\n需要: 战斗按钮×2 + 非战区域×2 + 血条'); return; }
+
+            await updateWindowPosition();
+            
+            if (modalShowing) return;
+
+            const now = Date.now();
+            if (cooldownUntil > now) {
+                const remaining = Math.ceil((cooldownUntil - now) / 1000);
+                if (remaining > 0) {
+                    setVal('battle', '冷却 ' + remaining + 's', 'yellow');
+                    return;
+                } else {
+                    cooldownUntil = 0;
+                    battleResultReceived = false;
+                    currentInBattle = false;
+                    pendingPollution = false;
+                    lastBattleState = null;
+                    setVal('type', '-', 'gray');
+                    setVal('color', '-', 'gray');
+                    setVal('pink', '-', 'gray');
+                    addLog('✅ 冷却结束，恢复检测');
+                }
+            }
+
+            if (battleResultReceived && currentInBattle) {
+                try {
+                    const capturePromises = {};
+                    for (const key of ['peace1', 'peace2', 'battle1', 'battle2']) {
+                        if (regions[key]) {
+                            const region = regions[key];
+                            const captureRegion = {
+                                x: region.screenX !== undefined ? region.screenX : 
+                                   (selectedWindow ? selectedWindow.x + region.x : region.x),
+                                y: region.screenY !== undefined ? region.screenY : 
+                                   (selectedWindow ? selectedWindow.y + region.y : region.y),
+                                width: region.width,
+                                height: region.height
+                            };
+                            capturePromises[key] = window.electronAPI.captureRegion(captureRegion);
+                        }
+                    }
+
+                    const captures = await Promise.all(Object.entries(capturePromises).map(async ([key, promise]) => {
+                        try {
+                            const cap = await promise;
+                            if (!cap) return { key, result: false };
+
+                            if (regionTemplates[key] && recognizerWorker && isWorkerReady) {
+                                const matchResult = await matchSingleRegion(cap.image, regionTemplates[key], key);
+                                return { key, result: matchResult };
+                            } else {
+                                const contentResult = await hasContent(cap.image);
+                                return { key, result: contentResult };
+                            }
+                        } catch (e) {
+                            return { key, result: false };
+                        }
+                    }));
+
+                    const results = {};
+                    captures.forEach(({ key, result }) => {
+                        results[key] = result;
+                    });
+
+                    const p1 = typeof results.peace1 === 'object' ? results.peace1.matched : results.peace1;
+                    const p2 = typeof results.peace2 === 'object' ? results.peace2.matched : results.peace2;
+                    const b1 = typeof results.battle1 === 'object' ? results.battle1.matched : results.battle1;
+                    const b2 = typeof results.battle2 === 'object' ? results.battle2.matched : results.battle2;
+
+                    const peaceDetected = (p1 || p2);
+                    const battleDetected = (b1 || b2);
+
+                    const exitedBattle = p1 && p2;
+
+                    if (exitedBattle) {
+                        handleBattleTransition(false);
+                        setVal('battle', '非战斗', 'green');
+                        battleResultReceived = false;
+                        cooldownUntil = 0;
+                        setVal('type', '-', 'gray');
+                        setVal('color', '-', 'gray');
+                        setVal('pink', '-', 'gray');
+                        addLog('✅ 已退出战斗，恢复检测');
+                    } else {
+                        setVal('battle', '等待退出...', 'yellow');
+                    }
+                } catch (e) { /* silent */ }
+                return;
+            }
+
+            try {
+                const capturePromises = {};
+
+                for (const key of ['battle1', 'battle2', 'peace1', 'peace2']) {
+                    if (regions[key]) {
+                        const region = regions[key];
+                        const captureRegion = {
+                            x: region.screenX !== undefined ? region.screenX : 
+                               (selectedWindow ? selectedWindow.x + region.x : region.x),
+                            y: region.screenY !== undefined ? region.screenY : 
+                               (selectedWindow ? selectedWindow.y + region.y : region.y),
+                            width: region.width,
+                            height: region.height
+                        };
+                        capturePromises[key] = window.electronAPI.captureRegion(captureRegion);
+                    }
+                }
+
+                const captures = await Promise.all(Object.entries(capturePromises).map(async ([key, promise]) => {
+                    try {
+                        const cap = await promise;
+                        if (!cap) return { key, result: false };
+
+                        if (regionTemplates[key] && recognizerWorker && isWorkerReady) {
+                            const matchResult = await matchSingleRegion(cap.image, regionTemplates[key], key);
+                            return { key, result: matchResult };
+                        } else {
+                            const contentResult = await hasContent(cap.image);
+                            return { key, result: contentResult };
+                        }
+                    } catch (e) {
+                        return { key, result: false };
+                    }
+                }));
+
+                const results = {};
+                captures.forEach(({ key, result }) => {
+                    results[key] = result;
+                });
+
+                let hpCap = null;
+                if (regions.avatar) {
+                    try {
+                        const region = regions.avatar;
+                        const captureRegion = {
+                            x: region.screenX !== undefined ? region.screenX : 
+                               (selectedWindow ? selectedWindow.x + region.x : region.x),
+                            y: region.screenY !== undefined ? region.screenY : 
+                               (selectedWindow ? selectedWindow.y + region.y : region.y),
+                            width: region.width,
+                            height: region.height
+                        };
+                        hpCap = await window.electronAPI.captureRegion(captureRegion);
+                    } catch (e) { /* silent */ }
+                }
+
+                const b1 = typeof results.battle1 === 'object' ? results.battle1.matched : results.battle1;
+                const b2 = typeof results.battle2 === 'object' ? results.battle2.matched : results.battle2;
+                const p1 = typeof results.peace1 === 'object' ? results.peace1.matched : results.peace1;
+                const p2 = typeof results.peace2 === 'object' ? results.peace2.matched : results.peace2;
+
+                const battleDetected = (b1 || b2);
+                const peaceDetected = (p1 || p2);
+
+                // 进入战斗：识别到战斗按钮即可
+                // 非战斗：战斗按钮消失 或 检测到非战区域（退出/地图等）
+                const inBattle = battleDetected && !peaceDetected;
+
+                setVal('battle', inBattle ? '战斗中' : '非战斗', inBattle ? 'red' : 'green');
+
+                if (typeof results.battle1 === 'object') updateRegionStatus('battle1', results.battle1);
+                if (typeof results.battle2 === 'object') updateRegionStatus('battle2', results.battle2);
+                if (typeof results.peace1 === 'object') updateRegionStatus('peace1', results.peace1);
+                if (typeof results.peace2 === 'object') updateRegionStatus('peace2', results.peace2);
+
+                handleBattleTransition(inBattle);
+
+                if (inBattle && hpCap) {
+                    const hpResult = await analyzeHPColor(hpCap.image);
+                    handleHPResult(hpResult);
+                } else if (inBattle) {
+                    setVal('type', '-', 'gray');
+                    setVal('color', '-', 'gray');
+                    setVal('pink', '-', 'gray');
+                } else {
+                    setVal('type', '-', 'gray');
+                    setVal('color', '-', 'gray');
+                    setVal('pink', '-', 'gray');
+                }
+
+            } catch (e) { addLog('检测失败: ' + e.message); }
+        }
+
+        function matchSingleRegion(screenshotBase64, templateBase64, regionKey) {
+            return new Promise(function (resolve) {
+                const timeout = setTimeout(function () {
+                    resolve({ matched: false, similarity: 0, method: 'timeout' });
+                }, 3000);
+
+                const handler = function (e) {
+                    if (e.data.type === 'matchResult' && e.data.regionKey === regionKey) {
+                        clearTimeout(timeout);
+                        recognizerWorker.removeEventListener('message', handler);
+                        resolve(e.data.result);
+                    }
+                };
+                recognizerWorker.addEventListener('message', handler);
+
+                recognizerWorker.postMessage({
+                    type: 'matchRegion',
+                    data: { screenshot: screenshotBase64, template: templateBase64, regionKey: regionKey }
+                });
+            });
+        }
+
+        function updateRegionStatus(key, result) {
+            const el = document.getElementById(key + 'Info');
+            if (!el) return;
+            const pct = (result.similarity * 100).toFixed(0);
+            if (result.matched) {
+                el.textContent = regions[key].width + 'x' + regions[key].height + ' ✓' + pct + '%';
+                el.classList.add('active');
+            } else {
+                el.textContent = regions[key].width + 'x' + regions[key].height + ' ✗' + pct + '%';
+                el.classList.remove('active');
+            }
+        }
+
+        function hasContent(imageBase64) {
+            return new Promise(function (resolve) {
+                const img = new Image();
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const data = ctx.getImageData(0, 0, img.width, img.height).data;
+                    let sum = 0, count = 0;
+                    for (let i = 0; i < data.length; i += 16) {
+                        sum += data[i] + data[i + 1] + data[i + 2];
+                        count++;
+                    }
+                    resolve((sum / (count * 3)) > 30);
+                };
+                img.onerror = function () { resolve(false); };
+                img.src = imageBase64;
+            });
+        }
+
+        function handleResult(result) { }
+
+        function analyzeHPColor(imageBase64) {
+            return new Promise(function (resolve) {
+                const img = new Image();
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    const scale = Math.max(1, Math.floor(Math.max(img.width, img.height) / 80));
+                    canvas.width = Math.floor(img.width / scale);
+                    canvas.height = Math.floor(img.height / scale);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                    let totalR = 0, totalG = 0, totalB = 0;
+                    let greenPixelCount = 0;
+                    let pinkPixelCount = 0;
+                    let validCount = 0;
+
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i], g = data[i + 1], b = data[i + 2];
+                        const brightness = (r + g + b) / 3;
+
+                        if (brightness < 25) continue;
+
+                        totalR += r; totalG += g; totalB += b;
+                        validCount++;
+
+                        const maxC = Math.max(r, g, b), minC = Math.min(r, g, b);
+                        const sat = maxC === 0 ? 0 : (maxC - minC) / maxC;
+
+                        if (sat < 0.15) continue;
+
+                        if (g > r * 1.15 && g > b * 1.1 && g - r > 20 && g - b > 15) greenPixelCount++;
+
+                        if (r > g * 1.08 && r > b * 1.05 && r - g > 15) {
+                            if (r > 140 || (r - b > 20)) pinkPixelCount++;
+                        }
+                    }
+
+                    const avgR = validCount > 0 ? totalR / validCount : 0;
+                    const avgG = validCount > 0 ? totalG / validCount : 0;
+                    const avgB = validCount > 0 ? totalB / validCount : 0;
+                    const greenRatio = validCount > 0 ? greenPixelCount / validCount : 0;
+                    const pinkRatio = validCount > 0 ? pinkPixelCount / validCount : 0;
+
+                    let hpType = 'unknown';
+                    if (greenRatio > 0.20) hpType = 'green';
+                    else if (pinkRatio > 0.12) hpType = 'pink';
+                    else if (avgR > avgG && avgR > avgB && avgR > 100) hpType = 'pink';
+                    else if (avgG > avgR && avgG > avgB) hpType = 'green';
+
+                    resolve({
+                        type: hpType,
+                        isPolluted: hpType === 'pink',
+                        avgColor: { r: Math.round(avgR), g: Math.round(avgG), b: Math.round(avgB) },
+                        greenRatio: greenRatio,
+                        pinkRatio: pinkRatio,
+                        brightness: 0
+                    });
+                };
+                img.onerror = function () { resolve({ type: 'error', isPolluted: false, avgColor: { r: 0, g: 0, b: 0 }, greenRatio: 0, pinkRatio: 0 }); };
+                img.src = imageBase64;
+            });
+        }
+
+        function handleHPResult(result) {
+            if (result.type === 'error') {
+                addLog('血条分析失败');
+                setVal('type', '错误', 'red');
+                setVal('color', '-', 'gray');
+                setVal('pink', '-', 'gray');
+                return;
+            }
+
+            battleResultReceived = true;
+            currentIsPolluted = result.isPolluted;
+            const colorStr = '(' + result.avgColor.r + ',' + result.avgColor.g + ',' + result.avgColor.b + ')';
+            const pinkPct = (result.pinkRatio * 100).toFixed(1);
+            const greenPct = (result.greenRatio * 100).toFixed(1);
+
+            setVal('color', colorStr, 'gray');
+            setVal('pink', `粉:${pinkPct}% 绿:${greenPct}%`, 'gray');
+
+            if (result.pinkRatio > 0.75) {
+                setVal('type', '🩷 污染!', 'pink');
+                setVal('pink', `粉:${pinkPct}% ✅`, 'pink');
+
+                pendingPollution = true;
+                detectedPollutedInBattle = true;
+                addLog(`🩷 血条非绿色 → 污染! RGB${colorStr} 粉:${pinkPct}% > 75% ${autoCountEnabled ? '(自动计数)' : '(弹窗确认)'}`);
+
+                if (!autoCountEnabled) {
+                    showPollutionModal();
+                }
+            } else if (result.greenRatio > 0.20) {
+                setVal('type', '🔵 正常', 'green');
+                setVal('pink', `绿:${greenPct}% ✓`, 'green');
+
+                pendingPollution = false;
+                addLog(`🔵 血条为绿色 → 正常 RGB${colorStr} 粉:${pinkPct}% 绿:${greenPct}%`);
+            } else {
+                setVal('type', '?', 'yellow');
+                setVal('pink', `粉:${pinkPct}% 绿:${greenPct}% ⚠`, 'yellow');
+                addLog(`⚠️ 无法确定: RGB${colorStr} 粉:${pinkPct}% 绿:${greenPct}%`);
+
+                pendingPollution = false;
+            }
+        }
+
+        function showPollutionModal() {
+            modalShowing = true;
+            const name = document.getElementById('spriteName').value.trim() || '未知';
+            document.getElementById('modalTitle').textContent = '🩷 检测到污染精灵';
+            document.getElementById('exitModalMsg').innerHTML =
+                '检测到 <span style="color:#ff69b4;font-weight:bold;font-size:17px">' + name + '</span> 是污染精灵！<br><br>是否计入统计？<br><small style="color:#888">（确认后将暂停检测，退出战斗后5秒恢复）</small>';
+            document.getElementById('modalYes').textContent = '是，计数 (+1)';
+            document.getElementById('modalNo').textContent = '否，跳过';
+            document.getElementById('modalYes').onclick = function () { handleModalConfirm(true); };
+            document.getElementById('modalNo').onclick = function () { handleModalConfirm(false); };
+            document.getElementById('exitModal').classList.add('show');
+        }
+
+        function showExitModal() {
+            modalShowing = true;
+            document.getElementById('modalTitle').textContent = '⚠️ 战斗已结束';
+            document.getElementById('exitModalMsg').innerHTML = '检测到退出战斗，但还有未确认的污染精灵。<br>是否计入统计？';
+            document.getElementById('modalYes').textContent = '是，计数';
+            document.getElementById('modalNo').textContent = '否，跳过';
+            document.getElementById('modalYes').onclick = function () { handleModalConfirm(true); };
+            document.getElementById('modalNo').onclick = function () { handleModalConfirm(false); };
+            document.getElementById('exitModal').classList.add('show');
+        }
+
+        function handleModalConfirm(confirm) {
+            document.getElementById('exitModal').classList.remove('show');
+            modalShowing = false;
+
+            if (confirm) {
+                confirmPollution();
+                addLog('⏸️ 已确认，等待退出战斗后恢复');
+            } else {
+                pendingPollution = false;
+                addLog('❌ 跳过计数，等待退出战斗后恢复');
+            }
+        }
+
+        function toggleAutoCount() {
+            autoCountEnabled = document.getElementById('autoCountToggle').checked;
+            if (autoCountEnabled) {
+                addLog('🔄 自动计数已开启');
+            } else {
+                addLog('🔄 自动计数已关闭');
+            }
+        }
+
+        function handleBattleTransition(newInBattle) {
+            if (!lastBattleState && newInBattle) {
+                battleResultReceived = false;
+                detectedPollutedInBattle = false;
+            }
+            
+            if (autoCountEnabled && lastBattleState && !newInBattle && detectedPollutedInBattle && !cooldownActive) {
+                confirmPollution();
+                detectedPollutedInBattle = false;
+                addLog('🔄 自动计数: 污染精灵已自动计入');
+            } else if (lastBattleState && !newInBattle && pendingPollution && !cooldownActive && !modalShowing) {
+                showExitModal();
+            } else if (!newInBattle && !cooldownActive) {
+                pendingPollution = false;
+            }
+            lastBattleState = newInBattle;
+            currentInBattle = newInBattle;
+        }
+
+        let detectionTimeout = null;
+
+        function toggleDetection() {
+            if (isDetecting) {
+                isDetecting = false;
+                if (detectionTimeout) { clearTimeout(detectionTimeout); detectionTimeout = null; }
+                if (detectionInterval) { clearInterval(detectionInterval); detectionInterval = null; }
+                document.getElementById('startBtn').textContent = '开始监控';
+                document.getElementById('startBtn').className = 'btn-success';
+                addLog('监控已停止');
+            } else {
+                if (!selectedWindow) { alert('请先选择游戏窗口'); return; }
+                if (!checkRegionsReady()) { alert('请先完成所有区域框选'); return; }
+                isDetecting = true;
+                lastBattleState = null;
+                document.getElementById('startBtn').textContent = '停止监控';
+                document.getElementById('startBtn').className = 'btn-danger';
+                addLog('开始监控...');
+
+                const interval = parseInt(document.getElementById('intervalSelect').value) || 3000;
+                detectionInterval = setInterval(() => {
+                    detectionTimeout = setTimeout(detectOnce, 0);
+                }, interval);
+            }
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem('rocoPityTracker', JSON.stringify({
+                    count: pollutedCount, history: history, regions: regions,
+                    spriteName: document.getElementById('spriteName').value
+                }));
+                try {
+                    const tpl = {};
+                    for (const k of Object.keys(regionTemplates)) { if (regionTemplates[k]) tpl[k] = regionTemplates[k]; }
+                    if (Object.keys(tpl).length) localStorage.setItem('rocoPityTracker_templates', JSON.stringify(tpl));
+                } catch (e) { }
+            } catch (e) { }
+        }
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem('rocoPityTracker');
+                if (!raw) return;
+                const d = JSON.parse(raw);
+                if (d.count !== undefined) pollutedCount = d.count;
+                if (d.history) history = d.history;
+                if (d.regions) {
+                    Object.keys(d.regions).forEach(function (k) {
+                        if (d.regions[k]) {
+                            regions[k] = d.regions[k];
+                            var el = document.getElementById(k + 'Info');
+                            if (el) { el.textContent = regions[k].width + 'x' + regions[k].height + ' ✓'; el.classList.add('active'); }
+                        }
+                    });
+                }
+                if (d.spriteName) document.getElementById('spriteName').value = d.spriteName;
+                try {
+                    var t = localStorage.getItem('rocoPityTracker_templates');
+                    if (t) Object.assign(regionTemplates, JSON.parse(t));
+                } catch (e) { }
+                updateCounter(); renderHistory();
+            } catch (e) { }
+        }
+
+        let pokemonData = {
+            families: [
+                { familyId: 1, familyName: "迪莫家族", members: [{ id: 1, name: "迪莫" }] },
+                { familyId: 2, familyName: "喵喵家族", members: [{ id: 2, name: "喵喵" }, { id: 3, name: "喵呜" }, { id: 4, name: "魔力猫" }] },
+                { familyId: 3, familyName: "火花家族", members: [{ id: 5, name: "火花" }, { id: 6, name: "焰火" }, { id: 7, name: "火神" }] },
+                { familyId: 4, familyName: "水蓝蓝家族", members: [{ id: 8, name: "水蓝蓝" }, { id: 9, name: "波波拉" }, { id: 10, name: "水灵" }] },
+                { familyId: 5, familyName: "鸭吉吉家族", members: [{ id: 11, name: "鸭吉吉" }] },
+                { familyId: 6, familyName: "板板壳家族", members: [{ id: 12, name: "板板壳" }, { id: 13, name: "咔咔壳" }, { id: 14, name: "水泡壳" }] },
+                { familyId: 7, familyName: "锥尾羊家族", members: [{ id: 15, name: "锥尾羊" }, { id: 16, name: "铃兰羊" }, { id: 17, name: "花影羚羊" }] },
+                { familyId: 8, familyName: "雪绒鸟家族", members: [{ id: 18, name: "雪绒鸟" }, { id: 19, name: "冬羽雀" }, { id: 20, name: "岚鸟" }] },
+                { familyId: 9, familyName: "小灵菇家族", members: [{ id: 21, name: "小灵菇" }, { id: 22, name: "幻灵菇" }, { id: 23, name: "幻影灵菇" }] },
+                { familyId: 10, familyName: "石肤蜥家族", members: [{ id: 24, name: "石肤蜥" }, { id: 25, name: "石刺蜥" }, { id: 26, name: "石冠王蜥" }] },
+                { familyId: 11, familyName: "布是石家族", members: [{ id: 27, name: "布是石" }, { id: 28, name: "布是岩" }, { id: 29, name: "布克棱岩" }] },
+                { familyId: 12, familyName: "恶魔叮家族", members: [{ id: 30, name: "恶魔叮" }, { id: 31, name: "叮叮恶魔" }] },
+                { familyId: 13, familyName: "毛毛家族", members: [{ id: 32, name: "毛毛" }, { id: 33, name: "爬爬" }, { id: 34, name: "化蝶" }] },
+                { familyId: 14, familyName: "幽影树家族", members: [{ id: 35, name: "幽影树" }] },
+                { familyId: 15, familyName: "小鼠獭家族", members: [{ id: 36, name: "小鼠獭" }, { id: 37, name: "燕尾獭" }, { id: 38, name: "卷胡巨獭" }] },
+                { familyId: 16, familyName: "矿晶虫家族", members: [{ id: 39, name: "矿晶虫" }, { id: 40, name: "晶石蜗" }] },
+                { familyId: 17, familyName: "奇丽草家族", members: [{ id: 41, name: "奇丽草" }, { id: 42, name: "奇丽叶" }, { id: 43, name: "奇丽花" }] },
+                { familyId: 18, familyName: "丢丢家族", members: [{ id: 44, name: "丢丢" }, { id: 45, name: "卡卡虫" }, { id: 46, name: "卡瓦重" }] },
+                { familyId: 19, familyName: "护主犬家族", members: [{ id: 47, name: "护主犬" }, { id: 48, name: "音速犬" }] },
+                { familyId: 20, familyName: "绿耳松鼠家族", members: [{ id: 49, name: "绿耳松鼠" }, { id: 50, name: "抱枕松鼠" }, { id: 51, name: "蹦床松鼠" }] },
+                { familyId: 21, familyName: "嘟嘟煲家族", members: [{ id: 52, name: "嘟嘟煲" }, { id: 53, name: "嘟嘟锅" }] },
+                { familyId: 22, familyName: "小灵面家族", members: [{ id: 54, name: "小灵面" }, { id: 55, name: "暗影灵面" }, { id: 56, name: "幽冥眼" }] },
+                { familyId: 23, familyName: "梦游家族", members: [{ id: 57, name: "梦游" }, { id: 58, name: "梦悠悠" }] },
+                { familyId: 24, familyName: "兽花蕾家族", members: [{ id: 59, name: "兽花蕾" }] },
+                { familyId: 25, familyName: "伏地兽家族", members: [{ id: 60, name: "伏地兽" }, { id: 61, name: "贪食鼹" }, { id: 62, name: "巨噬针鼹" }] },
+                { familyId: 26, familyName: "蹦蹦种子家族", members: [{ id: 63, name: "蹦蹦种子" }, { id: 64, name: "蹦蹦草" }, { id: 65, name: "蹦蹦花" }] },
+                { familyId: 27, familyName: "电咩咩家族", members: [{ id: 66, name: "电咩咩" }, { id: 67, name: "粉咩咩" }, { id: 68, name: "电球咩咩" }] },
+                { familyId: 28, familyName: "蒲公英家族", members: [{ id: 69, name: "蒲公英" }, { id: 70, name: "蒲公英娃娃" }] },
+                { familyId: 29, familyName: "伊贝儿家族", members: [{ id: 71, name: "伊贝儿" }, { id: 72, name: "伊贝粉粉" }] },
+                { familyId: 30, familyName: "白发懒人家族", members: [{ id: 73, name: "白发懒人" }, { id: 74, name: "动力猿" }, { id: 75, name: "瞌睡王" }] },
+                { familyId: 31, familyName: "海盔虫家族", members: [{ id: 76, name: "海盔虫" }, { id: 77, name: "刺盔虫" }, { id: 78, name: "千棘盔" }] },
+                { familyId: 32, familyName: "菊花梨家族", members: [{ id: 79, name: "菊花梨" }] },
+                { familyId: 33, familyName: "小星光家族", members: [{ id: 80, name: "小星光" }, { id: 81, name: "星光狮" }] },
+                { familyId: 34, familyName: "一窝蜂家族", members: [{ id: 82, name: "一窝蜂" }, { id: 83, name: "黄蜂后" }, { id: 84, name: "花魁蜂后" }] },
+                { familyId: 35, familyName: "小夜家族", members: [{ id: 85, name: "小夜" }, { id: 86, name: "紫夜" }, { id: 87, name: "朔夜伊芙" }] },
+                { familyId: 36, familyName: "乖乖鹄家族", members: [{ id: 88, name: "乖乖鹄" }, { id: 89, name: "蓝珠天鹅" }, { id: 90, name: "翠顶夫人" }] },
+                { familyId: 37, familyName: "黑羽夫人家族", members: [{ id: 91, name: "黑羽夫人" }] },
+                { familyId: 38, familyName: "锤头鹳家族", members: [{ id: 92, name: "锤头鹳" }] },
+                { familyId: 39, familyName: "绿草精灵家族", members: [{ id: 93, name: "绿草精灵" }, { id: 94, name: "魔草巫灵" }] },
+                { familyId: 40, familyName: "记忆石家族", members: [{ id: 95, name: "记忆石" }] },
+                { familyId: 41, familyName: "咔咔羽毛家族", members: [{ id: 96, name: "咔咔羽毛" }, { id: 97, name: "咔咔雀" }, { id: 98, name: "咔咔鸟" }] },
+                { familyId: 42, familyName: "小草虫家族", members: [{ id: 99, name: "小草虫" }, { id: 100, name: "草衣虫" }, { id: 101, name: "花衣蝶" }] },
+                { familyId: 43, familyName: "绿翼鸟家族", members: [{ id: 102, name: "绿翼鸟" }, { id: 103, name: "魔翼鸟" }, { id: 104, name: "魔眷鸟" }] },
+                { familyId: 44, familyName: "阿米亚特家族", members: [{ id: 105, name: "阿米亚特" }, { id: 106, name: "阿米樱" }, { id: 107, name: "罗隐" }] },
+                { familyId: 45, familyName: "风铃鲨家族", members: [{ id: 108, name: "风铃鲨" }, { id: 109, name: "蓝蝶鲨" }, { id: 110, name: "彩蝶鲨" }] },
+                { familyId: 46, familyName: "石石家族", members: [{ id: 111, name: "石石" }, { id: 112, name: "巨灵石" }] },
+                { familyId: 47, familyName: "仪使者家族", members: [{ id: 113, name: "仪使者" }, { id: 114, name: "仪式之星" }, { id: 115, name: "仪式巨像" }] },
+                { familyId: 48, familyName: "小独角兽家族", members: [{ id: 116, name: "小独角兽" }, { id: 117, name: "白金独角兽" }] },
+                { familyId: 49, familyName: "旋叶虫家族", members: [{ id: 118, name: "旋叶虫" }, { id: 119, name: "蓬叶虫" }, { id: 120, name: "风滚暮虫" }] },
+                { familyId: 50, familyName: "小黑猫家族", members: [{ id: 121, name: "小黑猫" }, { id: 122, name: "黑猫巫师" }] },
+                { familyId: 51, familyName: "忽幽狸家族", members: [{ id: 123, name: "忽幽狸" }, { id: 124, name: "影狸" }] },
+                { familyId: 52, familyName: "多多家族", members: [{ id: 125, name: "多多" }, { id: 126, name: "多啦多" }, { id: 127, name: "古啦多" }] },
+                { familyId: 53, familyName: "哭哭菇家族", members: [{ id: 128, name: "哭哭菇" }, { id: 129, name: "怖须菇" }, { id: 130, name: "怖哭菇" }] },
+                { familyId: 54, familyName: "恶魔狼家族", members: [{ id: 131, name: "恶魔狼" }] },
+                { familyId: 55, familyName: "小电企鹅家族", members: [{ id: 132, name: "小电企鹅" }, { id: 133, name: "电企鹅" }] },
+                { familyId: 56, familyName: "雪豆丁家族", members: [{ id: 134, name: "雪豆丁" }, { id: 135, name: "雪蛮人" }, { id: 136, name: "雪巨人" }] },
+                { familyId: 57, familyName: "呼呼猪家族", members: [{ id: 137, name: "呼呼猪" }, { id: 138, name: "獠牙猪" }] },
+                { familyId: 58, familyName: "雪娃娃家族", members: [{ id: 139, name: "雪娃娃" }, { id: 140, name: "冰封怨灵" }, { id: 141, name: "雪灵" }] },
+                { familyId: 59, familyName: "大耳帽兜家族", members: [{ id: 142, name: "大耳帽兜" }, { id: 143, name: "帽兜娃娃" }, { id: 144, name: "雪影娃娃" }] },
+                { familyId: 60, familyName: "权杖家族", members: [{ id: 145, name: "权杖-Ⅱ" }, { id: 146, name: "权杖-Ⅴ" }] },
+                { familyId: 61, familyName: "灵狐家族", members: [{ id: 147, name: "灵狐" }, { id: 148, name: "九尾狐" }, { id: 149, name: "尖嘴狐仙" }] },
+                { familyId: 62, familyName: "里奥家族", members: [{ id: 150, name: "里奥" }, { id: 151, name: "灵羽勇士" }, { id: 152, name: "圣羽翼王" }] },
+                { familyId: 63, familyName: "松仔家族", members: [{ id: 153, name: "松仔" }, { id: 154, name: "松叶羊" }, { id: 155, name: "针叶巡林" }] },
+                { familyId: 64, familyName: "小勇狮家族", members: [{ id: 156, name: "小勇狮" }, { id: 157, name: "炽焰狮" }, { id: 158, name: "炽心勇狮" }] },
+                { familyId: 65, familyName: "水滴蛇家族", members: [{ id: 159, name: "水滴蛇" }, { id: 160, name: "水蛇锁" }, { id: 161, name: "游蛇魔使" }] },
+                { familyId: 66, familyName: "公平鸽家族", members: [{ id: 162, name: "公平鸽" }] },
+                { familyId: 67, familyName: "小怂猫家族", members: [{ id: 163, name: "小怂猫" }, { id: 164, name: "怒目怂猫" }] },
+                { familyId: 68, familyName: "小狮鹫家族", members: [{ id: 165, name: "小狮鹫" }, { id: 166, name: "神圣狮鹫" }, { id: 167, name: "皇家狮鹫" }] },
+                { familyId: 69, familyName: "圆眼蜘蛛家族", members: [{ id: 168, name: "圆眼蜘蛛" }, { id: 169, name: "尖角蜘蛛" }, { id: 170, name: "芋香巨角蛛" }] },
+                { familyId: 70, familyName: "波波螺家族", members: [{ id: 171, name: "波波螺" }, { id: 172, name: "消波螺" }, { id: 173, name: "嗜波螺" }] },
+                { familyId: 71, familyName: "菇菇丁家族", members: [{ id: 174, name: "菇菇丁" }, { id: 175, name: "多菇丁" }, { id: 176, name: "九幽菇" }] },
+                { familyId: 72, familyName: "斑斑家族", members: [{ id: 177, name: "斑斑" }, { id: 178, name: "斑枭" }] },
+                { familyId: 73, familyName: "草头鸭家族", members: [{ id: 179, name: "草头鸭" }, { id: 180, name: "卷毛鸭" }] },
+                { familyId: 74, familyName: "海豹战士家族", members: [{ id: 181, name: "海豹战士" }, { id: 182, name: "海豹船长" }] },
+                { familyId: 75, familyName: "号儿鱼家族", members: [{ id: 183, name: "号儿鱼" }, { id: 184, name: "圆号鱼" }] },
+                { familyId: 76, familyName: "甜田螺家族", members: [{ id: 185, name: "甜田螺" }, { id: 186, name: "壳乙螺" }, { id: 187, name: "卡洛儿" }] },
+                { familyId: 77, familyName: "棋棋家族", members: [{ id: 188, name: "棋棋" }, { id: 189, name: "棋骑士" }, { id: 190, name: "棋齐垒" }, { id: 191, name: "棋祈督" }, { id: 192, name: "棋绮后" }] },
+                { familyId: 78, familyName: "奔波鼠家族", members: [{ id: 193, name: "奔波鼠" }, { id: 194, name: "流浪鼠" }] },
+                { familyId: 79, familyName: "呆小路家族", members: [{ id: 195, name: "呆小路" }, { id: 196, name: "舞动路路" }, { id: 197, name: "白发路路" }] },
+                { familyId: 80, familyName: "逗逗家族", members: [{ id: 198, name: "逗逗" }, { id: 199, name: "气球猫" }, { id: 200, name: "梦想三三" }] },
+                { familyId: 81, familyName: "花怨鳗家族", members: [{ id: 201, name: "花怨鳗" }, { id: 202, name: "鳗尾兽" }] },
+                { familyId: 82, familyName: "伊雷龙家族", members: [{ id: 203, name: "伊雷龙" }, { id: 204, name: "伊兰亚龙" }] },
+                { familyId: 83, familyName: "拉特家族", members: [{ id: 205, name: "拉特" }, { id: 206, name: "酷拉" }] },
+                { familyId: 84, familyName: "闪电环家族", members: [{ id: 207, name: "闪电环" }, { id: 208, name: "刺电环" }, { id: 209, name: "荆棘电环" }] },
+                { familyId: 85, familyName: "小箱怪家族", members: [{ id: 210, name: "小箱怪" }, { id: 211, name: "迷迷箱怪" }] },
+                { familyId: 86, familyName: "古钟蛇家族", members: [{ id: 212, name: "古钟蛇" }, { id: 213, name: "寒音蛇" }] },
+                { familyId: 87, familyName: "矮脚爬爬家族", members: [{ id: 214, name: "矮脚爬爬" }, { id: 215, name: "恶魔红钻" }] },
+                { familyId: 88, familyName: "火尾瓦特家族", members: [{ id: 216, name: "火尾瓦特" }, { id: 217, name: "火尾战士" }, { id: 218, name: "烈火守护" }] },
+                { familyId: 89, familyName: "里拉鳐家族", members: [{ id: 219, name: "里拉鳐" }] },
+                { familyId: 90, familyName: "海枝枝家族", members: [{ id: 220, name: "海枝枝" }] },
+                { familyId: 91, familyName: "多西家族", members: [{ id: 221, name: "多西" }, { id: 222, name: "库多西" }, { id: 223, name: "波多西" }] },
+                { familyId: 92, familyName: "小翼龙家族", members: [{ id: 224, name: "小翼龙" }, { id: 225, name: "翼龙" }] },
+                { familyId: 93, familyName: "电动长颈鹿家族", members: [{ id: 226, name: "电动长颈鹿" }, { id: 227, name: "奔乐鹿" }, { id: 228, name: "爵士鹿" }] },
+                { familyId: 94, familyName: "缇塔家族", members: [{ id: 229, name: "缇塔" }, { id: 230, name: "声波缇塔" }] },
+                { familyId: 95, familyName: "小鹬家族", members: [{ id: 231, name: "小鹬" }, { id: 232, name: "鄙目鹬" }, { id: 233, name: "高脚鹬" }] },
+                { familyId: 96, familyName: "脆筒甜甜家族", members: [{ id: 234, name: "脆筒甜甜" }, { id: 235, name: "香草甜甜" }, { id: 236, name: "圣代甜甜" }] },
+                { familyId: 97, familyName: "刺轮砣家族", members: [{ id: 237, name: "刺轮砣" }, { id: 238, name: "月亮砣" }] },
+                { familyId: 98, familyName: "豆丁鱼家族", members: [{ id: 239, name: "豆丁鱼" }, { id: 240, name: "快鳍鱼" }, { id: 241, name: "龙鱼" }] },
+                { familyId: 99, familyName: "胆小鳗鱼家族", members: [{ id: 242, name: "胆小鳗鱼" }, { id: 243, name: "闪电鳗鱼" }] },
+                { familyId: 100, familyName: "翡翠水母家族", members: [{ id: 244, name: "翡翠水母" }, { id: 245, name: "琉璃水母" }] },
+                { familyId: 101, familyName: "裘洛家族", members: [{ id: 246, name: "裘洛" }, { id: 247, name: "裘力" }, { id: 248, name: "裘卡" }] },
+                { familyId: 102, familyName: "可爱猿家族", members: [{ id: 249, name: "可爱猿" }, { id: 250, name: "炽热猿" }, { id: 251, name: "火焰猿" }] },
+                { familyId: 103, familyName: "布鲁斯家族", members: [{ id: 252, name: "布鲁斯" }, { id: 253, name: "雪顶布鲁斯" }, { id: 254, name: "冰钻布鲁斯" }] },
+                { familyId: 104, familyName: "治愈兔家族", members: [{ id: 255, name: "治愈兔" }, { id: 256, name: "红丝绒" }, { id: 257, name: "红绒十字" }] },
+                { familyId: 105, familyName: "乌达家族", members: [{ id: 258, name: "乌达" }, { id: 259, name: "迷你乌" }, { id: 260, name: "乌拉塔" }] },
+                { familyId: 106, familyName: "螺旋帕帕家族", members: [{ id: 261, name: "螺旋帕帕" }, { id: 262, name: "帕帕斯卡" }] },
+                { familyId: 107, familyName: "机械方方家族", members: [{ id: 263, name: "机械方方" }, { id: 264, name: "多彩方方" }, { id: 265, name: "立方人" }] },
+                { familyId: 108, familyName: "可立鸡家族", members: [{ id: 266, name: "可立鸡" }, { id: 267, name: "晕晕鸡" }, { id: 268, name: "绅士鸡" }, { id: 269, name: "武者鸡" }] },
+                { familyId: 109, familyName: "优优家族", members: [{ id: 270, name: "优优" }, { id: 271, name: "绒光优优" }] },
+                { familyId: 110, familyName: "噼啪鸟家族", members: [{ id: 272, name: "噼啪鸟" }] },
+                { familyId: 111, familyName: "深蓝鲸家族", members: [{ id: 273, name: "深蓝鲸" }] },
+                { familyId: 112, familyName: "格兰种子家族", members: [{ id: 274, name: "格兰种子" }, { id: 275, name: "格兰花" }, { id: 276, name: "格兰球" }] },
+                { familyId: 113, familyName: "地鼠家族", members: [{ id: 277, name: "地鼠" }, { id: 278, name: "遁鼠" }, { id: 279, name: "遁地鼠" }] },
+                { familyId: 114, familyName: "墨鱿士家族", members: [{ id: 280, name: "墨鱿士" }, { id: 281, name: "混乱鱿彩" }, { id: 282, name: "秩序鱿墨" }] },
+                { familyId: 115, familyName: "小甲虫家族", members: [{ id: 283, name: "小甲虫" }, { id: 284, name: "铠甲虫" }] },
+                { familyId: 116, familyName: "圣剑侍从家族", members: [{ id: 285, name: "圣剑侍从" }, { id: 286, name: "圣剑-X" }] },
+                { familyId: 117, familyName: "吸泥鸥家族", members: [{ id: 287, name: "吸泥鸥" }, { id: 288, name: "泥吼牙" }] },
+                { familyId: 118, familyName: "大头骨龙家族", members: [{ id: 289, name: "大头骨龙" }, { id: 290, name: "寂灭骨龙" }] },
+                { familyId: 119, familyName: "厉毒小萝家族", members: [{ id: 291, name: "厉毒小萝" }, { id: 292, name: "厉毒修萝" }] },
+                { familyId: 120, familyName: "小帕尔家族", members: [{ id: 293, name: "小帕尔" }, { id: 294, name: "帕尔萨斯" }, { id: 295, name: "龙息帕尔" }] },
+                { familyId: 121, familyName: "毛头小蛛家族", members: [{ id: 296, name: "毛头小蛛" }, { id: 297, name: "捕尘长绒" }, { id: 298, name: "食尘短绒" }] },
+                { familyId: 122, familyName: "画精灵家族", members: [{ id: 299, name: "画精灵" }, { id: 300, name: "画像守护" }, { id: 301, name: "画间法师手" }, { id: 302, name: "画间沉铁兽" }] },
+                { familyId: 123, familyName: "书魔虫家族", members: [{ id: 303, name: "书魔虫" }, { id: 304, name: "书卷守护" }, { id: 305, name: "古卷执政官" }, { id: 306, name: "古卷匣魔像" }] },
+                { familyId: 124, familyName: "绒绒家族", members: [{ id: 307, name: "绒绒" }, { id: 308, name: "小绒茧" }, { id: 309, name: "绒仙子" }] },
+                { familyId: 125, familyName: "犀角鸟家族", members: [{ id: 310, name: "犀角鸟" }, { id: 311, name: "光纤兽" }, { id: 312, name: "疾光千兽" }] },
+                { familyId: 126, familyName: "果冻家族", members: [{ id: 313, name: "果冻" }, { id: 314, name: "抹茶布丁" }, { id: 315, name: "椰浆布丁" }, { id: 316, name: "熔岩布丁" }] },
+                { familyId: 127, familyName: "星尘虫家族", members: [{ id: 317, name: "星尘虫" }, { id: 318, name: "落星虫" }, { id: 319, name: "陨星虫" }] },
+                { familyId: 128, familyName: "双灯鱼家族", members: [{ id: 320, name: "双灯鱼" }, { id: 321, name: "利灯鱼" }] },
+                { familyId: 129, familyName: "月牙雪熊家族", members: [{ id: 322, name: "月牙雪熊" }] },
+                { familyId: 130, familyName: "嗜光嗡嗡家族", members: [{ id: 323, name: "嗜光嗡嗡" }, { id: 324, name: "窃光蚊" }] },
+                { familyId: 131, familyName: "柴渣虫家族", members: [{ id: 325, name: "柴渣虫" }, { id: 326, name: "燃薪虫" }] },
+                { familyId: 132, familyName: "空空颅家族", members: [{ id: 327, name: "空空颅" }, { id: 328, name: "夜宿颅" }, { id: 329, name: "夜枭" }] },
+                { familyId: 133, familyName: "粉粉星家族", members: [{ id: 330, name: "粉粉星" }, { id: 331, name: "小皮球" }] },
+                { familyId: 134, familyName: "贝瑟家族", members: [{ id: 332, name: "贝瑟" }, { id: 333, name: "贝加尔" }, { id: 334, name: "贝古斯" }] },
+                { familyId: 135, familyName: "粉星仔家族", members: [{ id: 335, name: "粉星仔" }, { id: 336, name: "粉耳星兔" }, { id: 337, name: "落陨星兔" }] },
+                { familyId: 136, familyName: "布瓜蝌家族", members: [{ id: 338, name: "布瓜蝌" }, { id: 339, name: "上岸蛙" }] },
+                { familyId: 137, familyName: "火红尾家族", members: [{ id: 340, name: "火红尾" }, { id: 341, name: "雅丹鬃" }] },
+                { familyId: 138, familyName: "春团家族", members: [{ id: 342, name: "春团" }, { id: 343, name: "春兔" }, { id: 344, name: "春花兔" }] },
+                { familyId: 139, familyName: "幽星光家族", members: [{ id: 345, name: "幽星光" }, { id: 346, name: "曜星光" }, { id: 347, name: "暮星辰" }] }
+            ]
+        };
+        let searchTimeout = null;
+
+        function initSpriteSearch() {
+            try {
+                if (!pokemonData || !pokemonData.families) {
+                    addLog('❌ 精灵数据未定义');
+                    return;
+                }
+
+                const spriteInput = document.getElementById('spriteName');
+                const dropdown = document.getElementById('spriteDropdown');
+                const container = document.getElementById('spriteSearchContainer');
+
+                spriteInput.addEventListener('focus', function () {
+                    showDropdown('');
+                });
+
+                spriteInput.addEventListener('input', function () {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(function () {
+                        showDropdown(this.value);
+                    }.bind(this), 150);
+                });
+
+                spriteInput.addEventListener('blur', function () {
+                    setTimeout(function () {
+                        hideDropdown();
+                    }, 200);
+                });
+
+                container.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+
+                document.addEventListener('click', function () {
+                    hideDropdown();
+                });
+
+                let totalCount = 0;
+                pokemonData.families.forEach(f => totalCount += f.members.length);
+                addLog('✅ 精灵图鉴已加载 (' + totalCount + '只精灵, ' + pokemonData.families.length + '个家族)');
+            } catch (e) {
+                addLog('❌ 精灵图鉴初始化失败: ' + e.message);
+                console.error('Pokemon init error:', e);
+            }
+        }
+
+        function showDropdown(keyword) {
+            if (!pokemonData || !pokemonData.families) return;
+
+            const dropdown = document.getElementById('spriteDropdown');
+            const results = searchPokemon(keyword);
+
+            if (results.length === 0) {
+                dropdown.innerHTML = '<div class="dropdown-family"><div style="padding:12px;text-align:center;color:#666;">未找到匹配的精灵</div></div>';
+                dropdown.classList.add('show');
+                return;
+            }
+
+            let html = '';
+            results.forEach(function (family) {
+                html += '<div class="dropdown-family">';
+                html += '<div class="dropdown-family-title">' + family.familyName + '</div>';
+                family.members.forEach(function (member) {
+                    const isSelected = document.getElementById('spriteName').value === member.name;
+                    html += '<div class="dropdown-item' + (isSelected ? ' selected' : '') + '" data-name="' + member.name + '" onclick="selectSprite(\'' + member.name + '\')">';
+                    html += '<span class="dropdown-item-name">' + member.name + '</span>';
+                    html += '<span class="dropdown-item-id">#' + member.id + '</span>';
+                    html += '</div>';
+                });
+                html += '</div>';
+            });
+
+            dropdown.innerHTML = html;
+            dropdown.classList.add('show');
+        }
+
+        function hideDropdown() {
+            const dropdown = document.getElementById('spriteDropdown');
+            dropdown.classList.remove('show');
+        }
+
+        function searchPokemon(keyword) {
+            if (!keyword || !keyword.trim()) {
+                return pokemonData.families;
+            }
+
+            keyword = keyword.toLowerCase().trim();
+            return pokemonData.families.filter(function (family) {
+                return family.members.some(function (member) {
+                    return member.name.toLowerCase().includes(keyword);
+                });
+            }).map(function (family) {
+                return {
+                    familyId: family.familyId,
+                    familyName: family.familyName,
+                    members: family.members.filter(function (member) {
+                        return member.name.toLowerCase().includes(keyword);
+                    })
+                };
+            }).filter(f => f.members.length > 0).slice(0, 10);
+        }
+
+        function selectSprite(name) {
+            const input = document.getElementById('spriteName');
+            input.value = name;
+            saveData();
+            hideDropdown();
+            addLog('已选择精灵: ' + name);
+        }
+
+        addLog('页面已加载');
+        refreshWindowList();
+        initWorker();
+        loadData();
+        initSpriteSearch();
+
+        (async function loadTemplates() {
+            try {
+                const list = await window.electronAPI.getTemplateList();
+                templates = list.map(t => {
+                    var ext = t.filename.split('.').pop().toLowerCase();
+                    return { name: t.name, data: 'data:image/' + (ext === 'jpg' ? 'jpeg' : ext) + ';base64,' + t.data };
+                });
+                if (recognizerWorker && templates.length > 0) {
+                    recognizerWorker.postMessage({ type: 'setTemplates', data: templates });
+                }
+                addLog('已加载 ' + templates.length + ' 个模板');
+            } catch (e) { addLog('模板加载失败: ' + e.message); }
+        })();
+    </script>
+</body>
+
+</html>
