@@ -2,6 +2,8 @@ appId: com.yuguxiaojiu.roco-pity-tracker
 productName: YUGUXIAOJIU-ROCO
 executableName: RocoPityTracker
 copyright: Copyright © 2024 YUGUXIAOJIU
+compression: store
+asar: true
 
 directories:
   output: dist
@@ -9,17 +11,9 @@ directories:
 
 files:
   - src/**/*
-  - demo-images/**/*
   - build/icon.ico
 
 extraResources:
-  - from: demo-images/
-    to: templates/
-    filter:
-      - "**/*.png"
-      - "**/*.jpg"
-      - "**/*.jpeg"
-      - "**/*.bmp"
   - from: src/main/get-windows.ps1
     to: ./
     filter:
@@ -34,7 +28,9 @@ win:
       arch:
         - x64
   artifactName: ${productName}-${version}-Setup.${ext}
-  signAndEditExecutable: true
+  sign: null
+  signAndEditExecutable: false
+  forceCodeSigning: false
 
 nsis:
   oneClick: false
