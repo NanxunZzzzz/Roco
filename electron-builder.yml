@@ -1,5 +1,6 @@
 appId: com.yuguxiaojiu.roco-pity-tracker
 productName: YUGUXIAOJIU-ROCO
+executableName: RocoPityTracker
 copyright: Copyright © 2024 YUGUXIAOJIU
 
 directories:
@@ -33,10 +34,11 @@ win:
       arch:
         - x64
   artifactName: ${productName}-${version}-Setup.${ext}
-  signAndEditExecutable: false
+  signAndEditExecutable: true
 
 nsis:
   oneClick: false
+  include: build/installer.nsh
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
@@ -45,3 +47,5 @@ nsis:
   installerIcon: build/icon.ico
   uninstallerIcon: build/icon.ico
   installerHeaderIcon: build/icon.ico
+  installerSidebar: build/installerSidebar.bmp
+  uninstallerSidebar: build/installerSidebar.bmp

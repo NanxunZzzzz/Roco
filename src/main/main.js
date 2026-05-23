@@ -57,8 +57,14 @@ function copyDefaultTemplates() {
     }
 }
 
+function getAppIconPath() {
+    return isPackaged
+        ? path.join(process.resourcesPath, 'icon.ico')
+        : path.join(__dirname, '../../build/icon.ico');
+}
+
 function createWindow() {
-    const iconPath = path.join(__dirname, '../../build/icon.ico');
+    const iconPath = getAppIconPath();
     const windowOptions = {
         width: 900,
         height: 700,
